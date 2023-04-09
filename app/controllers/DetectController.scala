@@ -1,13 +1,14 @@
 package controllers
 
 import model.DetectedImage
+import parsing.ImageDetector
 import play.api.libs.json.Json
 import play.api.mvc._
 
 import javax.inject._
 
 @Singleton
-class DetectController @Inject()(val controllerComponents: ControllerComponents) extends BaseController {
+class DetectController @Inject()(val controllerComponents: ControllerComponents, imageDetector: ImageDetector) extends BaseController {
 
   private val OneMegabyte = 1000000L
 
@@ -17,8 +18,7 @@ class DetectController @Inject()(val controllerComponents: ControllerComponents)
       buffer <- request.body.asRaw
       bytes <- buffer.asBytes(maxLength = OneMegabyte)
     } yield {
-      bytes.utf8String
-      Ok(Json.toJson(Seq.empty[DetectedImage])) // TODO implement
+      Ok(Json.toJson(imageDetector.detectImagesIn(bytes.utf8String)))
 
     }).getOrElse {
       BadRequest(Json.toJson(s"Expected HTML on the request body of length less than $OneMegabyte"))
