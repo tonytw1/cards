@@ -15,3 +15,7 @@ libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0
 
 // Adds additional packages into conf/routes
 // play.sbt.routes.RoutesKeys.routesImport += "uk.co.eelpieconsulting.binders._"
+
+enablePlugins(DockerPlugin)
+dockerBaseImage := "openjdk:11-jre"
+dockerExposedPorts in Docker := Seq(9000)
