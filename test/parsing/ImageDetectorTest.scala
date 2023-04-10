@@ -45,5 +45,4 @@ class ImageDetectorTest {
     IOUtils.toString(this.getClass.getClassLoader.getResourceAsStream(filename), StandardCharsets.UTF_8)
   }
 
-
 }
