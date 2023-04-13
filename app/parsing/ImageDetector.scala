@@ -16,14 +16,11 @@ class ImageDetector {
   def detectImagesIn(html: String): Seq[DetectedImage] = {
     val doc = Jsoup.parse(html)
 
-    val metaTagsWithProperties = doc.select("meta[property]").asScala.toSeq
-    val metaTagsWithNames = doc.select("meta[name]").asScala.toSeq
-
-    val allMetaTags = metaTagsWithProperties ++ metaTagsWithNames
+    val allMetaTags = doc.select("meta").asScala.toSeq
 
     val imageMetaTags = allMetaTags.filter { e =>
-      imageProperties.contains(e.attr("property")) ||
-        imageProperties.contains(e.attr("name"))
+      val identifier = Seq(Option(e.attr("property")), Option(e.attr("name"))).flatten
+      identifier.exists(imageProperties.contains)
     }
     imageMetaTags.flatMap { tag =>
       val proposedUrl = tag.attr("content")
