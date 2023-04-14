@@ -25,7 +25,7 @@ class ImageDetector {
     imageMetaTags.flatMap { tag =>
       val proposedUrl = tag.attr("content")
       val parsedUri = Try(java.net.URI.create(proposedUrl)).toOption
-      parsedUri.flatMap { uri: URI =>
+      parsedUri.flatMap { uri =>
         onlyFullQualified(uri).map { url =>
           DetectedImage(url = url.toURL.toExternalForm)
         }
