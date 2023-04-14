@@ -27,7 +27,7 @@ class ImageDetector {
       val parsedUri = Try(java.net.URI.create(proposedUrl)).toOption
       parsedUri.flatMap { uri =>
         onlyFullQualified(uri).map { url =>
-          DetectedImage(url = url.toURL.toExternalForm)
+          DetectedImage(url = url.toURL.toExternalForm, contentType = None)
         }
       }
     }

@@ -41,6 +41,13 @@ class ImageDetectorTest {
     assertFalse(detected.contains(DetectedImage(url = "/assets/Uploads/ShareImage/Lionesses-Djane-left-and-Zahra-right.JPG")))
   }
 
+  @Test
+  def shouldCaptureAdditionalOGDataWhereAvailable(): Unit = {
+    val detected = imageDetector.detectImagesIn(loadAsString("page-with-og-image-property.html"))
+
+    assertEquals(Some("image/jpeg"), detected.head.contentType)
+  }
+
   private def loadAsString(filename: String) = {
     IOUtils.toString(this.getClass.getClassLoader.getResourceAsStream(filename), StandardCharsets.UTF_8)
   }
