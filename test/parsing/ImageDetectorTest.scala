@@ -46,6 +46,8 @@ class ImageDetectorTest {
     val detected = imageDetector.detectImagesIn(loadAsString("page-with-og-image-property.html"))
 
     assertEquals(Some("image/jpeg"), detected.head.contentType)
+    assertEquals(Some(1500), detected.head.width)
+    assertEquals(Some(1125), detected.head.height)
   }
 
   private def loadAsString(filename: String) = {
