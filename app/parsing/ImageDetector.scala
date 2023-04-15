@@ -20,10 +20,16 @@ class ImageDetector {
       ogImage.copy(contentType = metaTags.get("og:image:type"),
         width = metaTags.get("og:image:width").flatMap(v => Try(v.toInt).toOption),
         height = metaTags.get("og:image:height").flatMap(v => Try(v.toInt).toOption),
+        alt = metaTags.get("og:image:alt")
       )
     }
 
-    val twitterImage = detectedImageFrom(metaTags, "twitter:image")
+    val twitterImage = for {
+      twitterImage <- detectedImageFrom(metaTags, "twitter:image")
+    } yield {
+      twitterImage.copy(alt = metaTags.get("og:image:alt"))
+    }
+
     Seq(ogImage, twitterImage).flatten
   }
 
