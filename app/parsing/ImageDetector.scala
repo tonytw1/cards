@@ -17,7 +17,7 @@ class ImageDetector {
     val metaTags = metaTagsAsMap(html)
 
     val ogImage = for {
-      ogImage <- detectedImageFrom(metaTags, og + ":image", og)
+      ogImage <- detectedImageFrom(metaTags, og, "image")
     } yield {
       ogImage.copy(contentType = metaTags.get(og + ":image:type"),
         width = metaTags.get(og + ":image:width").flatMap(v => Try(v.toInt).toOption),
@@ -27,7 +27,7 @@ class ImageDetector {
     }
 
     val twitterImage = for {
-      twitterImage <- detectedImageFrom(metaTags, twitter + ":image", twitter)
+      twitterImage <- detectedImageFrom(metaTags, twitter, "image")
     } yield {
       twitterImage.copy(alt = metaTags.get(twitter + ":image:alt"))
     }
@@ -35,9 +35,9 @@ class ImageDetector {
     Seq(ogImage, twitterImage).flatten
   }
 
-  private def detectedImageFrom(metaTags: Map[String, String], imageIdentifier: String, source: String): Option[DetectedImage] = {
+  private def detectedImageFrom(metaTags: Map[String, String], source: String, imageIdentifier: String) = {
     for {
-      imageContent <- metaTags.get(imageIdentifier)
+      imageContent <- metaTags.get(source + ":" + imageIdentifier)
       imageUri <- Try(java.net.URI.create(imageContent)).toOption
       fullyQualifiedImageUri <- onlyFullQualified(imageUri)
     } yield {
