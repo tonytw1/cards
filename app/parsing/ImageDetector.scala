@@ -9,37 +9,39 @@ import scala.util.Try
 
 class ImageDetector {
 
+  private val og = "og"
+  private val twitter = "twitter"
   private val validImageUrlSchemes = Set("http", "https")
 
   def detectImagesIn(html: String): Seq[DetectedImage] = {
     val metaTags = metaTagsAsMap(html)
 
     val ogImage = for {
-      ogImage <- detectedImageFrom(metaTags, "og:image")
+      ogImage <- detectedImageFrom(metaTags, og + ":image", og)
     } yield {
-      ogImage.copy(contentType = metaTags.get("og:image:type"),
-        width = metaTags.get("og:image:width").flatMap(v => Try(v.toInt).toOption),
-        height = metaTags.get("og:image:height").flatMap(v => Try(v.toInt).toOption),
-        alt = metaTags.get("og:image:alt")
+      ogImage.copy(contentType = metaTags.get(og + ":image:type"),
+        width = metaTags.get(og + ":image:width").flatMap(v => Try(v.toInt).toOption),
+        height = metaTags.get(og + ":image:height").flatMap(v => Try(v.toInt).toOption),
+        alt = metaTags.get(og + ":image:alt")
       )
     }
 
     val twitterImage = for {
-      twitterImage <- detectedImageFrom(metaTags, "twitter:image")
+      twitterImage <- detectedImageFrom(metaTags, twitter + ":image", twitter)
     } yield {
-      twitterImage.copy(alt = metaTags.get("og:image:alt"))
+      twitterImage.copy(alt = metaTags.get(twitter + ":image:alt"))
     }
 
     Seq(ogImage, twitterImage).flatten
   }
 
-  private def detectedImageFrom(metaTags: Map[String, String], imageIdentifier: String): Option[DetectedImage] = {
+  private def detectedImageFrom(metaTags: Map[String, String], imageIdentifier: String, source: String): Option[DetectedImage] = {
     for {
       imageContent <- metaTags.get(imageIdentifier)
       imageUri <- Try(java.net.URI.create(imageContent)).toOption
       fullyQualifiedImageUri <- onlyFullQualified(imageUri)
     } yield {
-      DetectedImage(url = fullyQualifiedImageUri.toURL.toExternalForm)
+      DetectedImage(url = fullyQualifiedImageUri.toURL.toExternalForm, source = source)
     }
   }
 

@@ -21,6 +21,7 @@ class ImageDetectorTest {
     val detected = imageDetector.detectImagesIn(loadAsString("rimutaka-incline-railway-news.html"))
     assertEquals(Some("https://www.rimutaka-incline-railway.org.nz/sites/default/files/2020-12/20201017-a1328-IMG_6380.JPG"),
       detected.headOption.map(_.url))
+    assertEquals("twitter", detected.head.source)
   }
 
   @Test
@@ -38,7 +39,7 @@ class ImageDetectorTest {
   @Test
   def shouldIgnoreNoneAbsoluteOgImageUrls(): Unit = {
     val detected = imageDetector.detectImagesIn(loadAsString("page-with-relative-og-image.html"))
-    assertFalse(detected.contains(DetectedImage(url = "/assets/Uploads/ShareImage/Lionesses-Djane-left-and-Zahra-right.JPG")))
+    assertFalse(detected.contains(DetectedImage(url = "/assets/Uploads/ShareImage/Lionesses-Djane-left-and-Zahra-right.JPG", source = "og")))
   }
 
   @Test
