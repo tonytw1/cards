@@ -17,3 +17,15 @@ curl -v -XPOST -H 'Content-Type: text/html' --data-binary @page-with-og-image-pr
     }
 ]
 ```
+
+
+## Pin
+
+After choosing a detected image we can pin a local copy of it.
+This lets us be the local origin for resizing and protects us from the source image driftin.
+
+```
+POST /pin?url=detected image url
+```
+
+Responses with HTTP 200.

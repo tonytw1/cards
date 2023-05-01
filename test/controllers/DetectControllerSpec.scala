@@ -35,7 +35,6 @@ class DetectControllerSpec extends PlaySpec with GuiceOneAppPerTest with Injecti
 
       status(response) mustBe OK
       val detectedImages = Json.parse(contentAsString(response)).as[Seq[DetectedImage]]
-      detectedImages
       assertEquals(2, detectedImages.length)
       assertEquals("https://eyeofthefish.org/wp-content/uploads/2023/03/Gerard7.png", detectedImages.head.url)
     }
