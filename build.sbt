@@ -11,6 +11,9 @@ libraryDependencies += guice
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
 
 libraryDependencies += "org.jsoup" % "jsoup" % "1.15.4"
+libraryDependencies += "commons-codec" % "commons-codec" % "1.15"
+libraryDependencies += "commons-io" % "commons-io" % "2.11.0"
+libraryDependencies += ws
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "uk.co.eelpieconsulting.controllers._"
