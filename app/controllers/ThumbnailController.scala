@@ -4,23 +4,22 @@ import akka.util.ByteString
 import org.apache.commons.io.IOUtils
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
+import play.api.libs.ws.WSClient
 import play.api.mvc._
 import play.api.{Configuration, Logging}
 
 import java.io.{File, FileInputStream}
 import java.net.URL
-import java.nio.charset.Charset
 import javax.inject._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
 
 @Singleton
-class ThumbnailController @Inject()(val controllerComponents: ControllerComponents, val configuration: Configuration)
-  extends BaseController with Logging with LocalFiles {
+class ThumbnailController @Inject()(val controllerComponents: ControllerComponents, val configuration: Configuration, wsClient: WSClient)
+  extends BaseController with Logging with LocalFiles with ReasonableWaits {
 
-  private val pinnedFolder = configuration.get[String]("pinned.folder")
-
-  def thumbnail(url: String) = Action.async { implicit request: Request[AnyContent] =>
+  def thumbnail(url: String): Action[AnyContent] = Action.async {
     logger.info("Fetching pinned url: " + url)
     val validURL = Try(new URL(url)).toOption
 
@@ -28,20 +27,15 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
       val contentFile = new File(filePathForContent(url))
       if (contentFile.exists()) {
         val content = IOUtils.toByteArray(new FileInputStream(contentFile))
-        val mayContentType = {
-          val mineTypeFile = new File(filepathForMimeType(url))
-          if (mineTypeFile.isFile) {
-            Some(IOUtils.toString(new FileInputStream(mineTypeFile), Charset.defaultCharset()))
-          } else {
-            None
-          }
+        val mayContentType = contentTypeOfPinned(url)
+
+        val eventualResizedContent = resize(content)
+
+        eventualResizedContent.map { resizedContent =>
+          val contentLength = resizedContent.length
+          logger.info(s"Returning thumbnail of local file ${filePathForContent(url)} with length $contentLength")
+          Ok.sendEntity(HttpEntity.Strict(ByteString.apply(resizedContent), mayContentType))
         }
-
-        val resizedContent = resize(content)
-
-        val contentLength = resizedContent.length
-        logger.info(s"Returning thumbnail of local file ${filePathForContent(url)} with length $contentLength")
-        Future.successful(Ok.sendEntity(HttpEntity.Strict(ByteString.apply(resizedContent), mayContentType)))
 
       } else {
         logger.info(s"No local file ${filePathForContent(url)}")
@@ -53,9 +47,15 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
       Future.successful(BadRequest(Json.toJson(message)))
     }
   }
-  private def resize(content: Array[Byte]): Array[Byte] = {
-    // TODO Given the source image file pass it through image proxy
-    content
+
+  private def resize(content: Array[Byte]): Future[Array[Byte]] = {
+    // Make a call to image proxy and return the result
+    val imageProxyUrl = "http://imgproxy.example.com/AfrOrF3gWeDA6VOlDG4TzxMv39O7MXnF4CXpKUwGqRM/resize:fill:300:400:0/plain/http://example.com/images/curiosity.jpg"
+
+    val imageProxyRequest = wsClient.url(imageProxyUrl).withRequestTimeout(TenSeconds)
+    imageProxyRequest.get().map { r =>
+      content
+    }
   }
 
 }

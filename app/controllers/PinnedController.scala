@@ -10,19 +10,16 @@ import play.api.{Configuration, Logging}
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.net.URL
-import java.nio.charset.Charset
-import java.util.concurrent.TimeUnit
 import javax.inject._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.duration.Duration
 import scala.util.Try
 
 @Singleton
 class PinnedController @Inject()(val controllerComponents: ControllerComponents, val configuration: Configuration, wsClient: WSClient)
-  extends BaseController with Logging with LocalFiles {
+  extends BaseController with Logging with LocalFiles with ReasonableWaits {
 
-  def pinned(url: String) = Action.async { implicit request: Request[AnyContent] =>
+  def pinned(url: String): Action[AnyContent] = Action.async {
     logger.info("Fetching pinned url: " + url)
     val validURL = Try(new URL(url)).toOption
 
@@ -32,14 +29,7 @@ class PinnedController @Inject()(val controllerComponents: ControllerComponents,
         val content = IOUtils.toByteArray(new FileInputStream(contentFile))
         val contentLength = content.length
 
-        val mayContentType = {
-          val mineTypeFile = new File(filepathForMimeType(url))
-          if (mineTypeFile.isFile) {
-            Some(IOUtils.toString(new FileInputStream(mineTypeFile), Charset.defaultCharset()))
-          } else {
-            None
-          }
-        }
+        val mayContentType = contentTypeOfPinned(url)
 
         logger.info(s"Returning content from local file ${filePathForContent(url)} with length $contentLength")
         Future.successful(Ok.sendEntity(HttpEntity.Strict(ByteString.apply(content), mayContentType)))
@@ -55,7 +45,7 @@ class PinnedController @Inject()(val controllerComponents: ControllerComponents,
     }
   }
 
-  def pin(url: String) = Action.async { implicit request: Request[AnyContent] =>
+  def pin(url: String): Action[AnyContent] = Action.async {
     logger.info("Pinning url: " + url)
     val validURL = Try(new URL(url)).toOption
 
@@ -64,7 +54,7 @@ class PinnedController @Inject()(val controllerComponents: ControllerComponents,
       if (!contentFile.exists()) {
         logger.info("Fetching from: " + url)
         wsClient.url(url.toExternalForm).
-          withRequestTimeout(Duration(10, TimeUnit.SECONDS)).get().map { r =>
+          withRequestTimeout(TenSeconds).get().map { r =>
           r.status match {
             case 200 =>
               val maybeContentType = r.header(CONTENT_TYPE)
