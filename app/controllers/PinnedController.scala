@@ -1,7 +1,6 @@
 package controllers
 
 import akka.util.ByteString
-import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.IOUtils
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
@@ -20,9 +19,8 @@ import scala.concurrent.duration.Duration
 import scala.util.Try
 
 @Singleton
-class PinnedController @Inject()(val controllerComponents: ControllerComponents, configuration: Configuration, wsClient: WSClient) extends BaseController with Logging {
-
-  private val pinnedFolder = configuration.get[String]("pinned.folder")
+class PinnedController @Inject()(val controllerComponents: ControllerComponents, val configuration: Configuration, wsClient: WSClient)
+  extends BaseController with Logging with LocalFiles {
 
   def pinned(url: String) = Action.async { implicit request: Request[AnyContent] =>
     logger.info("Fetching pinned url: " + url)
@@ -106,15 +104,6 @@ class PinnedController @Inject()(val controllerComponents: ControllerComponents,
 
   private def successfulPinOf = {
     Ok(Json.toJson("ok"))
-  }
-
-  private def filePathForContent(url: URL) = {
-    val filename = DigestUtils.sha256Hex(url.toExternalForm) // TODO collisions
-    Seq(pinnedFolder, filename).mkString("/")
-  }
-
-  private def filepathForMimeType(url: URL) = {
-    filePathForContent(url) + ".mime"
   }
 
 }

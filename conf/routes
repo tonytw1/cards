@@ -10,6 +10,9 @@ POST    /pinned                     controllers.PinnedController.pin(url: String
 +anyhost
 GET     /pinned                     controllers.PinnedController.pinned(url: String)
 
++anyhost
+GET     /thumbnail                  controllers.ThumbnailController.thumbnail(url: String)
+
 # Map static resources from the /public folder to the /assets URL path
 +anyhost
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

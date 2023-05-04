@@ -38,3 +38,15 @@ GET /pinned?url=pinned image url
 ```
 
 Responses HTTP 200 with the pinned image.
+
+
+
+## Thumbnail
+
+Generate a resized thumbnail of a pinned image.
+
+```
+GET /thumbname?url=pinned image url
+```
+
+
