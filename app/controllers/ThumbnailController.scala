@@ -28,10 +28,6 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
       val contentFile = new File(filePathForContent(url))
       if (contentFile.exists()) {
         val content = IOUtils.toByteArray(new FileInputStream(contentFile))
-        val contentLength = content.length
-
-        // TODO Given the source image file pass it through image proxy
-
         val mayContentType = {
           val mineTypeFile = new File(filepathForMimeType(url))
           if (mineTypeFile.isFile) {
@@ -41,8 +37,11 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
           }
         }
 
-        logger.info(s"Returning content from local file ${filePathForContent(url)} with length $contentLength")
-        Future.successful(Ok.sendEntity(HttpEntity.Strict(ByteString.apply(content), mayContentType)))
+        val resizedContent = resize(content)
+
+        val contentLength = resizedContent.length
+        logger.info(s"Returning thumbnail of local file ${filePathForContent(url)} with length $contentLength")
+        Future.successful(Ok.sendEntity(HttpEntity.Strict(ByteString.apply(resizedContent), mayContentType)))
 
       } else {
         logger.info(s"No local file ${filePathForContent(url)}")
@@ -53,6 +52,10 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
       val message = "Expected a valid URL on url parameter"
       Future.successful(BadRequest(Json.toJson(message)))
     }
+  }
+  private def resize(content: Array[Byte]): Array[Byte] = {
+    // TODO Given the source image file pass it through image proxy
+    content
   }
 
 }
