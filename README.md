@@ -38,3 +38,17 @@ GET /pinned?url=pinned image url
 ```
 
 Responses HTTP 200 with the pinned image.
+
+
+
+## Thumbnail
+
+Generate a resized thumbnail of a pinned image.
+
+```
+GET /thumbnail?url=pinned image url
+```
+
+We use imageproxy for resizing. imageproxy is past the pinned image url (above) as it's origin.
+
+
