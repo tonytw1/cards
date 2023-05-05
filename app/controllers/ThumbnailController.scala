@@ -54,7 +54,8 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
     val signature = "no-signature"
     // Make a call to image proxy and return the result
 
-    val resizing = Seq(imageProxyUrl, signature, "resize:fill:320", Base64.encodeBase64String(originUrl.getBytes)).mkString("/")
+    val width = 640
+    val resizing = Seq(imageProxyUrl, signature, "resize:fill:" + width.toString, Base64.encodeBase64String(originUrl.getBytes)).mkString("/")
 
     val imageProxyRequest = wsClient.url(resizing).withRequestTimeout(TenSeconds)
     val eventualResponse = imageProxyRequest.get()
