@@ -46,7 +46,9 @@ Responses HTTP 200 with the pinned image.
 Generate a resized thumbnail of a pinned image.
 
 ```
-GET /thumbname?url=pinned image url
+GET /thumbnail?url=pinned image url
 ```
+
+We use imageproxy for resizing. imageproxy is past the pinned image url (above) as it's origin.
 
 

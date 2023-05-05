@@ -1,14 +1,14 @@
 package controllers
 
 import akka.util.ByteString
-import org.apache.commons.io.IOUtils
+import org.apache.commons.codec.binary.Base64
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
 import play.api.mvc._
 import play.api.{Configuration, Logging}
 
-import java.io.{File, FileInputStream}
+import java.io.File
 import java.net.URL
 import javax.inject._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,6 +19,8 @@ import scala.util.Try
 class ThumbnailController @Inject()(val controllerComponents: ControllerComponents, val configuration: Configuration, wsClient: WSClient)
   extends BaseController with Logging with LocalFiles with ReasonableWaits {
 
+  private val imageProxyUrl = configuration.get[String]("imageproxy.url")
+
   def thumbnail(url: String): Action[AnyContent] = Action.async {
     logger.info("Fetching pinned url: " + url)
     val validURL = Try(new URL(url)).toOption
@@ -26,11 +28,9 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
     validURL.map { url =>
       val contentFile = new File(filePathForContent(url))
       if (contentFile.exists()) {
-        val content = IOUtils.toByteArray(new FileInputStream(contentFile))
+        val eventualResizedContent = resize(url)
+
         val mayContentType = contentTypeOfPinned(url)
-
-        val eventualResizedContent = resize(content)
-
         eventualResizedContent.map { resizedContent =>
           val contentLength = resizedContent.length
           logger.info(s"Returning thumbnail of local file ${filePathForContent(url)} with length $contentLength")
@@ -48,13 +48,24 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
     }
   }
 
-  private def resize(content: Array[Byte]): Future[Array[Byte]] = {
-    // Make a call to image proxy and return the result
-    val imageProxyUrl = "http://imgproxy.example.com/AfrOrF3gWeDA6VOlDG4TzxMv39O7MXnF4CXpKUwGqRM/resize:fill:300:400:0/plain/http://example.com/images/curiosity.jpg"
+  private def resize(url: URL): Future[Array[Byte]] = {
+    val originUrl = url.toExternalForm
 
-    val imageProxyRequest = wsClient.url(imageProxyUrl).withRequestTimeout(TenSeconds)
-    imageProxyRequest.get().map { r =>
-      content
+    val signature = "no-signature"
+    // Make a call to image proxy and return the result
+
+    val resizing = Seq(imageProxyUrl, signature, "resize:fill:320", Base64.encodeBase64String(originUrl.getBytes)).mkString("/")
+
+    val imageProxyRequest = wsClient.url(resizing).withRequestTimeout(TenSeconds)
+    val eventualResponse = imageProxyRequest.get()
+    eventualResponse.map { r =>
+      r.status match {
+        case 200 =>
+          r.bodyAsBytes.toArray
+        case _ =>
+          logger.error(s"Error fetching thumbnail from image proxy: ${r.status} ${r.body}")
+          Array.empty[Byte]
+      }
     }
   }
 
