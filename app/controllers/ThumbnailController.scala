@@ -9,7 +9,7 @@ import play.api.mvc._
 import play.api.{Configuration, Logging}
 
 import java.io.File
-import java.net.URL
+import java.net.{URL, URLEncoder}
 import javax.inject._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -49,7 +49,7 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
   }
 
   private def resize(url: URL): Future[Array[Byte]] = {
-    val originUrl = url.toExternalForm
+    val originUrl = "http://cards:9000/pinned?url=" + URLEncoder.encode(url.toExternalForm, "UTF-8")
 
     val signature = "no-signature"
     // Make a call to image proxy and return the result
