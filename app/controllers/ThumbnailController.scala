@@ -19,6 +19,7 @@ import scala.util.Try
 class ThumbnailController @Inject()(val controllerComponents: ControllerComponents, val configuration: Configuration, wsClient: WSClient)
   extends BaseController with Logging with LocalFiles with ReasonableWaits {
 
+  private val cardsUrl = configuration.get[String]("cards.url")
   private val imageProxyUrl = configuration.get[String]("imageproxy.url")
 
   def thumbnail(url: String): Action[AnyContent] = Action.async {
@@ -49,10 +50,11 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
   }
 
   private def resize(url: URL): Future[Array[Byte]] = {
-    val originUrl = "http://cards:9000/pinned?url=" + URLEncoder.encode(url.toExternalForm, "UTF-8")
+    // Make a call to image proxy and return the result
+    // This ping pong back to ourselves is abit odd but isn't hurting
+    val originUrl = cardsUrl + "/pinned?url=" + URLEncoder.encode(url.toExternalForm, "UTF-8")
 
     val signature = "no-signature"
-    // Make a call to image proxy and return the result
 
     val width = 640
     val resizing = Seq(imageProxyUrl, signature, "resize:fill:" + width.toString, Base64.encodeBase64String(originUrl.getBytes)).mkString("/")
