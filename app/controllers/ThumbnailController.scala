@@ -35,7 +35,7 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
         eventualResizedContent.map { resizedContent =>
           val contentLength = resizedContent.length
           logger.info(s"Returning thumbnail of local file ${filePathForContent(url)} with length $contentLength")
-          Ok.sendEntity(HttpEntity.Strict(ByteString.apply(resizedContent), mayContentType))
+          Ok.sendEntity(HttpEntity.Strict(ByteString.apply(resizedContent), mayContentType)).withHeaders("Cache-Control" -> "max-age=3600")
         }
 
       } else {
