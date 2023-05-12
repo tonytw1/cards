@@ -1,5 +1,18 @@
 # Cards
 
+A service to detect and serve Twitter Cards and Open Graph images in a responsible way.
+
+- Aims to avoid sending excessive traffic to origin images.
+- Allows detected images to pinned so that their usages don't unexpectedly in the future.
+- Provides thumbnails with sensible caching settings.
+
+[Wellynews](https://github.com/tonytw1/wellynews) uses the Cards service to decorate news item URLs with open graph images:
+
+![Example usage](example-usage.jpg)
+
+
+# End points
+
 ##  Detect
 
 Detect Twitter Cards and Open Graph images on an HTML page.
@@ -84,3 +97,6 @@ Start the application:
 
 ```
 sbt run
+```
+
+The service is now running on `http://localhost:9000`
