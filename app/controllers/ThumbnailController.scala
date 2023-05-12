@@ -27,15 +27,14 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
     validURL.map { url =>
       val contentFile = new File(filePathForContent(url))
       if (contentFile.exists()) {
-        val mayContentType = contentTypeOfPinned(url)
-
         val eventualMaybeResizedContent = resize(url)
 
         eventualMaybeResizedContent.map { maybeResizedContent =>
           maybeResizedContent.map { resizedContent =>
-            val contentLength = resizedContent.length
+            val contentType = resizedContent._1
+            val contentLength = resizedContent._2
             logger.info(s"Returning thumbnail of local file ${filePathForContent(url)} with length $contentLength")
-            Ok.sendEntity(HttpEntity.Strict(ByteString.apply(resizedContent), mayContentType)).withHeaders("Cache-Control" -> "max-age=3600")
+            Ok.sendEntity(HttpEntity.Strict(ByteString.apply(resizedContent._3), Some(contentType))).withHeaders("Cache-Control" -> "max-age=3600")
 
           }.getOrElse {
             NotFound("Could not load pinned image")
@@ -53,7 +52,7 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
     }
   }
 
-  private def resize(url: URL): Future[Option[Array[Byte]]] = {
+  private def resize(url: URL): Future[Option[(String, String, Array[Byte])]] = {
     // Make a call to image proxy and return the result
     // This ping pong back to ourselves is abit odd but isn't hurting
     val originUrl = cardsUrl + "/pinned?url=" + URLEncoder.encode(url.toExternalForm, "UTF-8")
@@ -68,7 +67,12 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
     eventualResponse.map { r =>
       r.status match {
         case 200 =>
-          Some(r.bodyAsBytes.toArray)
+          for {
+            contentType <- r.header(CONTENT_TYPE)
+            contentLength <- r.header(CONTENT_LENGTH)
+          } yield {
+            (contentType, contentLength, r.bodyAsBytes.toArray)
+          }
         case _ =>
           logger.error(s"Error fetching thumbnail from image proxy: ${r.status} ${r.body}")
           None
