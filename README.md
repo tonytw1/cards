@@ -28,9 +28,10 @@ curl -v -XPOST -H 'Content-Type: text/html' --data-binary @page-with-og-image-pr
 
 ```
 [
-    {
-        "url": "Fully qualified image URL"
-    }
+   {
+      "source" : "og",
+      "url" : "http://wellington.govt.nz/-/media/news-and-events/news-and-information/news/images/2021/11/oriental-bay-02.jpg?mh=1000&mw=1200"
+   }
 ]
 ```
 
