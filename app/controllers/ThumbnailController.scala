@@ -30,11 +30,9 @@ class ThumbnailController @Inject()(val controllerComponents: ControllerComponen
         val eventualMaybeResizedContent = resize(url)
 
         eventualMaybeResizedContent.map { maybeResizedContent =>
-          maybeResizedContent.map { resizedContent =>
-            val contentType = resizedContent._1
-            val contentLength = resizedContent._2
+          maybeResizedContent.map { case (contentType: String, contentLength: String, content: Array[Byte]) =>
             logger.info(s"Returning thumbnail of local file ${filePathForContent(url)} with length $contentLength")
-            Ok.sendEntity(HttpEntity.Strict(ByteString.apply(resizedContent._3), Some(contentType))).withHeaders("Cache-Control" -> "max-age=3600")
+            Ok.sendEntity(HttpEntity.Strict(ByteString.apply(content), Some(contentType))).withHeaders("Cache-Control" -> "max-age=3600")
 
           }.getOrElse {
             NotFound("Could not load pinned image")
