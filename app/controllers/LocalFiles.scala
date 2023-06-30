@@ -14,8 +14,9 @@ trait LocalFiles {
 
   private val pinnedFolder = configuration.get[String]("pinned.folder")
 
-  def filePathForContent(url: URL) = {
-    val filename = DigestUtils.sha256Hex(url.toExternalForm) // TODO collisions
+  def filePathForContent(url: URL): String = {
+    // Small risk of a collision but the consequences are not very harmful
+    val filename = DigestUtils.sha256Hex(url.toExternalForm)
     Seq(pinnedFolder, filename).mkString("/")
   }
 
@@ -28,7 +29,7 @@ trait LocalFiles {
     }
   }
 
-  def filepathForMimeType(url: URL) = {
+  def filepathForMimeType(url: URL): String = {
     filePathForContent(url) + ".mime"
   }
 
