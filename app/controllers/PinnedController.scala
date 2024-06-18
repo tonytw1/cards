@@ -20,7 +20,7 @@ class PinnedController @Inject()(val controllerComponents: ControllerComponents,
   extends BaseController with Logging with LocalFiles with ReasonableWaits {
 
   def pinned(url: String): Action[AnyContent] = Action.async {
-    logger.info("Fetching pinned url: " + url)
+    logger.debug("Fetching pinned url: " + url)
     val validURL = Try(new URL(url)).toOption
 
     validURL.map { url =>
@@ -31,11 +31,11 @@ class PinnedController @Inject()(val controllerComponents: ControllerComponents,
 
         val mayContentType = contentTypeOfPinned(url)
 
-        logger.info(s"Returning content from local file ${filePathForContent(url)} with length $contentLength")
+        logger.debug(s"Returning content from local file ${filePathForContent(url)} with length $contentLength")
         Future.successful(Ok.sendEntity(HttpEntity.Strict(ByteString.apply(content), mayContentType)))
 
       } else {
-        logger.info(s"No local file ${filePathForContent(url)}")
+        logger.info(s"No local file ${filePathForContent(url)} for pinned url $url")
         Future.successful(NotFound(Json.toJson("Not found")))
       }
 
