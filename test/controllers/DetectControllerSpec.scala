@@ -1,8 +1,8 @@
 package controllers
 
-import akka.util.ByteString
 import model.DetectedImage
 import org.apache.commons.io.IOUtils
+import org.apache.pekko.util.ByteString
 import org.junit.Assert.assertEquals
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._

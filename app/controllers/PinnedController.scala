@@ -1,7 +1,7 @@
 package controllers
 
-import akka.util.ByteString
 import org.apache.commons.io.IOUtils
+import org.apache.pekko.util.ByteString
 import play.api.http.HttpEntity
 import play.api.libs.json.Json
 import play.api.libs.ws.WSClient
