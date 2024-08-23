@@ -8,11 +8,11 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 scalaVersion := "2.13.14"
 
 libraryDependencies += guice
-libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
 
-libraryDependencies += "org.jsoup" % "jsoup" % "1.15.4"
-libraryDependencies += "commons-codec" % "commons-codec" % "1.15"
-libraryDependencies += "commons-io" % "commons-io" % "2.11.0"
+libraryDependencies += "org.jsoup" % "jsoup" % "1.18.1"
+libraryDependencies += "commons-codec" % "commons-codec" % "1.17.0"
+libraryDependencies += "commons-io" % "commons-io" % "2.16.1"
 libraryDependencies += ws
 
 // Adds additional packages into Twirl
