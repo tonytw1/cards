@@ -10,7 +10,7 @@ import javax.inject._
 @Singleton
 class DetectController @Inject()(val controllerComponents: ControllerComponents, imageDetector: ImageDetector) extends BaseController {
 
-  private val OneMegabyte = 1000000L
+  private val OneMegabyte = 2000000L
 
   def detect() = Action { implicit request: Request[AnyContent] =>
     implicit val diw = Json.writes[DetectedImage]
